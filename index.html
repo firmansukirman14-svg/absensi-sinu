@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="font-family:sans-serif;text-align:center;margin-top:40px">
+
+<h2>ABSENSI SINU</h2>
+
+<input type="text" id="nama" placeholder="Nama"><br><br>
+
+<select id="tipe">
+<option>Clock In</option>
+<option>Clock Out</option>
+<option>Break</option>
+<option>After Break</option>
+<option>Overtime</option>
+</select><br><br>
+
+<input type="file" id="foto" accept="image/*" capture="camera"><br><br>
+
+<button onclick="absen()">ABSEN SEKARANG</button>
+
+<script>
+const { createClient } = supabase
+const supa = createClient(
+"ISI_URL_SUPABASE",
+"ISI_ANON_KEY_SUPABASE"
+);
+
+async function absen() {
+
+navigator.geolocation.getCurrentPosition(async (pos) => {
+
+let nama = document.getElementById("nama").value;
+let tipe = document.getElementById("tipe").value;
+let file = document.getElementById("foto").files[0];
+
+if(!file){
+alert("Foto wajib diisi");
+return;
+}
+
+let fileName = Date.now()+"-"+file.name;
+
+await supa.storage
+.from("foto-absen")
+.upload(fileName, file);
+
+await supa
+.from("presensi")
+.insert([{
+nama: nama,
+tipe: tipe,
+latitude: pos.coords.latitude,
+longitude: pos.coords.longitude,
+foto: fileName
+}]);
+
+alert("Absensi Berhasil!");
+});
+}
+</script>
+
+</body>
+</html>
